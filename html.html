@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<link rel="profile" href="http://microformats.org/profile/hcard" />
+		<style>
+			body,
+			table {
+				font-family: arial;
+				font-size: 10pt;
+				line-height: 1.5em;
+			}
+
+			img {
+				border: 0;
+			}
+
+			.l {
+				font-variant: small-caps;
+			}
+
+			.indent {
+				margin-left: 5px;
+				padding-left: 5px;
+				border-left: 1px solid #000;
+			}
+
+			#imagePopup {
+				position: fixed;
+				z-index: 999;
+				/* prevent audio control from appearing over the div */
+				left: 0px;
+				top: 0px;
+				height: 100%;
+				width: 100%;
+				cursor: pointer;
+				background-image: url('${utils.base64(translucentBg.contentType.mediaType, translucentBg.data)}');
+			}
+		</style>
+		<script>
+			function showImage(a) {
+				var imgs = a.getElementsByTagName('img');
+				if (imgs.length == 0) {
+					return;
+				}
+				var img = imgs[0];
+				var imagePopup_img = document.getElementById("imagePopup_img");
+				imagePopup_img.src = img.src;
+				var imagePopup = document.getElementById('imagePopup');
+				imagePopup.style.display = 'block';
+			}
+
+			function resizeRelative(img, maxHeight, maxWidth) {
+				var ratio = 0;
+				var width = img.width;
+				var height = img.height;
+				if (width > maxWidth) {
+					ratio = maxWidth / width;
+					img.width = maxWidth;
+					img.height = height * ratio;
+					height = height * ratio;
+					width = width * ratio;
+				}
+				if (height > maxHeight) {
+					ratio = maxHeight / height;
+					img.height = maxHeight;
+					img.width = width * ratio;
+				}
+			}
+		</script>
+	</head>
+	<body>
+		<div id="imagePopup" onclick="this.style.display='none'" style="display:none">
+			<table style="width:100%; height:100%">
+				<tr>
+					<td valign="middle" align="center">
+						<img id="imagePopup_img" src="" />
+					</td>
+				</tr>
+			</table>
+		</div>
+		<#list vcards as v>
+			<div class="vcard">
+				<#if v.sortString?? && v.sortString.value??>
+					<#assign sortString=v.sortString.value>
+						<#elseif v.structuredName?? && v.structuredName.sortAs?has_content>
+							<#assign sortString="">
+								<#list v.structuredName.sortAs as name>
+									<#assign sortString=sortString + name>
+										<#if name_has_next>
+											<#assign sortString=sortString + ",">
+										</#if>
+								</#list>
+								<#elseif v.organization?? && v.organization.sortAs?has_content>
+									<#assign sortString="">
+										<#list v.organization.sortAs as name>
+											<#assign sortString=sortString + name>
+												<#if name_has_next>
+													<#assign sortString=sortString + ",">
+												</#if>undefined
+										</#list>undefined
+				</#if>
+				<#if sortString??>undefined<abbr class="sort-string" title="${sortString}"></abbr>undefined</#if>undefined<table>undefined<tr>undefined<td valign="top">
+							<#assign makeLink=true>
+								<#if v.photos?has_content>
+									<#assign photo=v.photos[0]>
+										<#if photo.url??>
+											<#assign imgSrc=photo.url>
+												<#elseif photo.data??>
+													<#assign imgSrc=utils.base64(photo.contentType.mediaType, photo.data)>undefined
+										</#if>
+										<#assign imgClass="photo">
+											<#elseif v.logos?has_content>
+												<#assign logo=v.logos[0]>
+													<#if logo.url??>
+														<#assign imgSrc=logo.url>
+															<#elseif logo.data??>
+																<#assign imgSrc=utils.base64(logo.contentType.mediaType, logo.data)>undefined
+													</#if>
+													<#assign imgClass="logo">
+														<#else>
+															<#assign imgSrc=utils.base64(noProfile.contentType.mediaType, noProfile.data)>
+																<#assign makeLink=false>undefined
+								</#if>
+								<#if makeLink>undefined<a href="#" onclick="showImage(this); return false;">undefined</#if>undefined<img <#if imgClass??>class="${imgClass}"undefined</#if> onload="resizeRelative(this, 100, 100)" src="${imgSrc}" /><#if makeLink>undefined</a>undefined</#if>undefined
+						</td>undefined<td valign="top">
+							<#if v.formattedName?? && v.formattedName.value??>undefined<h1 class="fn">${v.formattedName.value}</h1>
+								<#elseif v.structuredName?? && v.structuredName.family?? && v.structuredName.given??>undefined<h1>${v.structuredName.given} ${v.structuredName.family}</h1>
+									<#else>undefined<h1>VCard #${v_index + 1}</h1>undefined
+							</#if>
+							<#if v.nickname?? && v.nickname.values?has_content>undefined<span class="l">Nicknames: </span>
+								<#list v.nickname.values as nickname>undefined<span class="nickname">${nickname}</span>
+									<#if nickname_has_next>, undefined</#if>undefined
+								</#list>undefined<br />undefined
+							</#if>
+							<#if v.birthday?? && v.birthday.date??>undefined<span class="l">Birthday: </span>undefined<time class="bday" datetime="${v.birthday.date?string(" yyyy-MM-dd")}">${v.birthday.date?string("MMMM d, yyyy")}</time>undefined<br />undefined</#if>
+							<#if v.categories?? && v.categories.values?has_content>undefined<span class="l">Tags: </span>
+								<#list v.categories.values as category>undefined<span class="category">${category}</span>
+									<#if category_has_next>, undefined</#if>undefined
+								</#list>undefined<br />undefined
+							</#if>undefined
+						</td>undefined</tr>undefined</table>
+				<#if v.sounds?has_content>
+					<#assign sound=v.sounds[0]>
+						<#if sound.url?? || sound.data??>
+							<#if sound.url??>
+								<#assign sourceSrc=sound.url>
+									<#else>
+										<#assign sourceSrc=utils.base64(sound.contentType.mediaType, sound.data)>undefined
+							</#if>undefined<audio controls="controls">undefined
+								<source id="audioClip" class="sound" src="${sourceSrc}" type="${sound.contentType.mediaType}" />undefined<span class="l">Audio clip: </span>undefined<a href="#" onclick="window.location=document.getElementById('audioClip').src">[download]</a>undefined
+							</audio>undefined<br />undefined
+						</#if>undefined
+				</#if>undefined<br />
+				<#if v.classification?? && v.classification.value??>undefined<span class="l">Data classification: </span>undefined<span class="class">${v.classification.value}</span>undefined<br />undefined</#if>
+				<#if v.uid?? && v.uid.value??>undefined<span class="l">Unique identifier: </span>undefined<span class="uid">${v.uid.value}</span>undefined<br />undefined</#if>
+				<#if v.revision?? && v.revision.value??>undefined<span class="l">vCard last updated: </span>undefined<time class="rev" datetime="${v.revision.value?string(" yyyy-MM-dd'T'HH:mm:ssZ")}">${v.revision.value?string("MMMM d, yyyy h:mm aa z")}</time>undefined<br />undefined</#if>undefined<table>undefined<tr>undefined<td valign="top">
+							<#if v.addresses?has_content>undefined<span class="l">Addresses:</span>undefined<div class="indent">
+									<#list v.addresses as adr>undefined<div class="adr">
+											<#if adr.label??>undefined<span class="label">undefined<span class="value" style="display:none">${utils.lineBreaks(adr.label?html)}</span>undefined</#if>
+											<#if adr.types?has_content>undefined<i>
+													<#list adr.types as t>undefined<span class="type">${t.value?capitalize}</span>
+														<#if t_has_next>, undefined</#if>undefined
+													</#list>undefined
+												</i>undefined<br />undefined</#if>
+											<#if adr.label??>undefined</span>undefined</#if>
+											<#if adr.poBox??> P.O. Box undefined<span class="post-office-box">${adr.poBox}</span>undefined<br />undefined</#if>
+											<#if adr.streetAddress??>undefined<span class="street-address">${utils.lineBreaks(adr.streetAddress?html)}</span>undefined<br />undefined</#if>
+											<#if adr.extendedAddress??>undefined<span class="extended-address">${utils.lineBreaks(adr.extendedAddress?html)}</span>undefined<br />undefined</#if>
+											<#if adr.locality??>undefined<span class="locality">${adr.locality}</span>
+												<#if adr.region??>, undefined</#if>undefined
+											</#if>
+											<#if adr.region??>undefined<span class="region">${adr.region}</span>undefined</#if>
+											<#if adr.postalCode??>undefined<span class="postal-code">${adr.postalCode}</span>undefined</#if>
+											<#if adr.country??>undefined<br />undefined<span class="country-name">${adr.country}</span>undefined</#if>undefined
+										</div>undefined<br />undefined</#list>undefined
+								</div>undefined</#if>undefined
+						</td>undefined<td valign="top" style="padding-left:20px">
+							<#if v.telephoneNumbers?has_content>undefined<span class="l">Phone numbers:</span>undefined<div class="indent">
+									<#list v.telephoneNumbers as tel>undefined<div class="tel">
+											<#if tel.types?has_content>undefined<i>
+													<#list tel.types as t>undefined<span class="type">${t.value?capitalize}</span>
+														<#if t_has_next>, undefined</#if>undefined
+													</#list>undefined
+												</i>: undefined</#if>undefined<span class="value">
+												<#if tel.uri??> ${tel.uri.number}<#if tel.uri.extension??> x${tel.uri.extension}undefined</#if>
+													<#elseif tel.text??> ${tel.text} undefined
+												</#if>undefined
+											</span>undefined
+										</div>undefined</#list>undefined
+								</div>undefined<br />undefined</#if>
+							<#if v.emails?has_content>undefined<span class="l">Emails:</span>undefined<div class="indent">
+									<#list v.emails as email>undefined<div class="email">
+											<#if email.types?has_content>undefined<i>
+													<#list email.types as t>undefined<span class="type">${t.value?capitalize}</span>
+														<#if t_has_next>, undefined</#if>undefined
+													</#list>undefined
+												</i>: undefined</#if>undefined<a class="value" href="mailto:${email.value}">${email.value}</a>undefined
+										</div>undefined</#list>undefined
+								</div>undefined<br />undefined</#if>
+							<#if v.impps?has_content>undefined<span class="l">Instant messenger handles:</span>undefined<div class="indent">
+									<#list v.impps as impp>
+										<#if impp.protocol=="aim">
+											<#assign protocol="AOL">
+												<#elseif impp.protocol=="icq">
+													<#assign protocol="ICQ">
+														<#elseif impp.protocol=="irc">
+															<#assign protocol="IRC">
+																<#elseif impp.protocol=="msnim">
+																	<#assign protocol="MSN">
+																		<#elseif impp.protocol=="sip">
+																			<#assign protocol="SIP">
+																				<#elseif impp.protocol=="skype">
+																					<#assign protocol="Skype">
+																						<#elseif impp.protocol=="xmpp">
+																							<#assign protocol="XMPP">
+																								<#elseif impp.protocol=="ymsgr">
+																									<#assign protocol="Yahoo!">
+																										<#else>
+																											<#assign protocol=impp.protocol>undefined
+										</#if>undefined<i>${protocol}</i>: undefined<a class="url" href="${scribeIndex.getPropertyScribe(impp).writeHtmlLink(impp)}">${impp.handle}</a>undefined<br />undefined
+									</#list>undefined
+								</div>undefined<br />undefined</#if>
+							<#if v.urls?has_content>undefined<span class="l">URLs:</span>undefined<div class="indent">
+									<#list v.urls as url>undefined<a class="url" href="${url.value}">${url.value}</a>undefined<br />undefined</#list>undefined
+								</div>undefined</#if>undefined
+						</td>undefined<td valign="top" style="padding-left:20px">
+							<#if v.structuredName??>undefined<span class="l">Name: </span>undefined<div class="n indent">
+									<#if v.structuredName.family??>undefined<i>Family</i>: undefined<span class="family-name">${v.structuredName.family}</span>undefined<br />undefined</#if>
+									<#if v.structuredName.given??>undefined<i>Given</i>: undefined<span class="given-name">${v.structuredName.given}</span>undefined<br />undefined</#if>
+									<#if v.structuredName.additionalNames?has_content>undefined<i>Additional</i>: <#list v.structuredName.additionalNames as n>undefined<span class="additional-name">${n}</span>
+											<#if n_has_next>, undefined</#if>undefined
+										</#list>undefined<br />undefined</#if>
+									<#if v.structuredName.prefixes?has_content>undefined<i>Honorific prefixes</i>: <#list v.structuredName.prefixes as n>undefined<span class="honorific-prefix">${n}</span>
+											<#if n_has_next>, undefined</#if>undefined
+										</#list>undefined<br />undefined</#if>
+									<#if v.structuredName.suffixes?has_content>undefined<i>Honorific suffixes</i>: <#list v.structuredName.suffixes as n>undefined<span class="honorific-suffix">${n}</span>
+											<#if n_has_next>, undefined</#if>undefined
+										</#list>undefined<br />undefined</#if>undefined
+								</div>undefined<br />undefined</#if>
+							<#if v.geo?? && v.geo.latitude?? && v.geo.longitude??>undefined<span class="l">Geo: </span>undefined<span class="geo">undefined<span class="latitude">${v.geo.latitude?string("0.######")}</span>, undefined<span class="longitude">${v.geo.longitude?string("0.######")}</span>undefined</span>undefined<br />undefined</#if>
+							<#if v.mailer?? && v.mailer.value??>undefined<span class="l">Mailer: </span>undefined<span class="mailer">${v.mailer.value}</span>undefined<br />undefined</#if>
+							<#if v.timezone?? && v.timezone.offset??>undefined<span class="l">Timezone: </span>undefined<span class="tz"> ${v.timezone.offset.toString(false)} </span>undefined<br />undefined</#if>
+							<#if v.organization?? && v.organization.values?has_content>undefined<span class="l">Organization: </span>undefined<span class="org">
+									<#list v.organization.values as org>
+										<#if org_index==0>undefined<span class="organization-name">${org}</span>
+											<#if org_has_next>, undefined</#if>
+											<#elseif org_index==1>undefined<span class="organization-unit">${org}</span>
+												<#if org_has_next>, undefined</#if>
+												<#else> ${org}<#if org_has_next>, undefined</#if>undefined
+										</#if>undefined
+									</#list>undefined
+								</span>undefined<br />undefined</#if>
+							<#if v.titles?has_content>undefined<span class="l">Titles: </span>
+								<#list v.titles as title>undefined<span class="title">${title.value}</span>
+									<#if title_has_next>, undefined</#if>undefined
+								</#list>undefined<br />undefined
+							</#if>
+							<#if v.roles?has_content>undefined<span class="l">Roles: </span>
+								<#list v.roles as role>undefined<span class="role">${role.value}</span>
+									<#if role_has_next>, undefined</#if>undefined
+								</#list>undefined<br />undefined
+							</#if>undefined
+						</td>undefined</tr>undefined</table>
+				<#if v.notes?has_content>undefined<span class="l">Notes:</span>
+					<#list v.notes as note>undefined<div class="note" style="font-family:monospace"> ${utils.lineBreaks(note.value?html)} </div>undefined<br />undefined</#list>undefined
+				</#if>undefined<abbr class="prodid" title="ez-vcard ${ezVCardVersion}"></abbr>undefined
+			</div>undefined
+		</#list>undefined<i>hCard specs: undefined<a href="http://microformats.org/wiki/hcard">http://microformats.org/wiki/hcard</a>undefined</i>undefined<br />undefined<i>Generated by undefined<a href="${ezVCardUrl}">ez-vcard</a> ${ezVCardVersion}undefined</i>undefined
+	</body>undefined
+</html>
